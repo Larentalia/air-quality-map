@@ -1,14 +1,41 @@
 // Configuration
 const CONFIG = {
-    // IMPORTANT: Add your Mapbox token here!
+    // Mapbox token
     mapboxToken: 'pk.eyJ1IjoiYmVnb3Blbm9uIiwiYSI6ImNtaDRscmg5eTEzd3cya3NocGlwYnlna2cifQ.9L4j5ak5j0o9lCIiRJ1csQ',
-    
+   
+        // WAQI API token
+    waqiToken: 'f5dbc59413842f4440b30b1e64ea41a9d71a5ec7',
+
     // Map center (Madrid!)
     center: [-3.7038, 40.4168],
     zoom: 6,
     
-    // Update interval (5 minutes)
-    updateInterval: 5 * 60 * 1000
+    // Update interval (30 minutes - WAQI data updates hourly)
+    updateInterval: 30 * 60 * 1000,
+
+   // Spanish cities to monitor
+    cities: [
+        'madrid',
+        'barcelona', 
+        'valencia',
+        'sevilla',
+        'zaragoza',
+        'malaga',
+        'murcia',
+        'palma',
+        'bilbao',
+        'alicante',
+        'cordoba',
+        'valladolid',
+        'vigo',
+        'gijon',
+        'hospitalet',
+        'granada',
+        'tarragona',
+        'badajoz',
+        'santander',
+        'pamplona'
+    ]
 };
 
 // Initialize Mapbox
@@ -21,332 +48,144 @@ const map = new mapboxgl.Map({
     zoom: CONFIG.zoom
 });
 
-// Sample air quality data covering more of Spain
-const sampleMadridData = {
+// Store for air quality data
+let airQualityData = {
     type: 'FeatureCollection',
-    features: [
-        // Madrid stations
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-3.7038, 40.4168] },
-            properties: {
-                name: 'Plaza de España',
-                city: 'Madrid',
-                country: 'Spain',
-                aqi: 45,
-                measurements: [
-                    { parameter: 'PM2.5', value: 12, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 25, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-3.6889, 40.4378] },
-            properties: {
-                name: 'Retiro Park',
-                city: 'Madrid',
-                country: 'Spain',
-                aqi: 32,
-                measurements: [
-                    { parameter: 'PM2.5', value: 8, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 18, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-3.7174, 40.4230] },
-            properties: {
-                name: 'Casa de Campo',
-                city: 'Madrid',
-                country: 'Spain',
-                aqi: 28,
-                measurements: [
-                    { parameter: 'PM2.5', value: 7, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 15, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-3.6915, 40.4200] },
-            properties: {
-                name: 'Atocha Station',
-                city: 'Madrid',
-                country: 'Spain',
-                aqi: 78,
-                measurements: [
-                    { parameter: 'PM2.5', value: 28, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 45, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        
-        // Barcelona stations
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [2.1734, 41.3851] },
-            properties: {
-                name: 'Barcelona Centro',
-                city: 'Barcelona',
-                country: 'Spain',
-                aqi: 62,
-                measurements: [
-                    { parameter: 'PM2.5', value: 22, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 38, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [2.1543, 41.3977] },
-            properties: {
-                name: 'Gràcia, Barcelona',
-                city: 'Barcelona',
-                country: 'Spain',
-                aqi: 48,
-                measurements: [
-                    { parameter: 'PM2.5', value: 13, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 26, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        
-        // Valencia
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-0.3763, 39.4699] },
-            properties: {
-                name: 'Valencia Centro',
-                city: 'Valencia',
-                country: 'Spain',
-                aqi: 55,
-                measurements: [
-                    { parameter: 'PM2.5', value: 18, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 32, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        
-        // Zaragoza (your city!)
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-0.8891, 41.6488] },
-            properties: {
-                name: 'Zaragoza Centro',
-                city: 'Zaragoza',
-                country: 'Spain',
-                aqi: 42,
-                measurements: [
-                    { parameter: 'PM2.5', value: 11, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 23, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-0.9067, 41.6561] },
-            properties: {
-                name: 'Delicias, Zaragoza',
-                city: 'Zaragoza',
-                country: 'Spain',
-                aqi: 38,
-                measurements: [
-                    { parameter: 'PM2.5', value: 9, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 20, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        
-        // Sevilla
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-5.9845, 37.3891] },
-            properties: {
-                name: 'Sevilla Centro',
-                city: 'Sevilla',
-                country: 'Spain',
-                aqi: 58,
-                measurements: [
-                    { parameter: 'PM2.5', value: 20, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 35, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        
-        // Bilbao
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-2.9253, 43.2630] },
-            properties: {
-                name: 'Bilbao Centro',
-                city: 'Bilbao',
-                country: 'Spain',
-                aqi: 44,
-                measurements: [
-                    { parameter: 'PM2.5', value: 12, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 24, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        
-        // Málaga
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-4.4214, 36.7213] },
-            properties: {
-                name: 'Málaga Centro',
-                city: 'Málaga',
-                country: 'Spain',
-                aqi: 51,
-                measurements: [
-                    { parameter: 'PM2.5', value: 15, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 28, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        
-        // Additional Madrid suburbs
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-3.7260, 40.4450] },
-            properties: {
-                name: 'Moncloa',
-                city: 'Madrid',
-                country: 'Spain',
-                aqi: 95,
-                measurements: [
-                    { parameter: 'PM2.5', value: 34, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 52, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-3.6800, 40.4100] },
-            properties: {
-                name: 'Vallecas',
-                city: 'Madrid',
-                country: 'Spain',
-                aqi: 110,
-                measurements: [
-                    { parameter: 'PM2.5', value: 42, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 65, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-3.7100, 40.4520] },
-            properties: {
-                name: 'Chamartín',
-                city: 'Madrid',
-                country: 'Spain',
-                aqi: 52,
-                measurements: [
-                    { parameter: 'PM2.5', value: 15, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 28, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [-3.6950, 40.3950] },
-            properties: {
-                name: 'Usera',
-                city: 'Madrid',
-                country: 'Spain',
-                aqi: 135,
-                measurements: [
-                    { parameter: 'PM2.5', value: 52, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 78, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-       // Tarragona
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [1.2444, 41.1189] },
-            properties: {
-                name: 'Tarragona Centro',
-                city: 'Tarragona',
-                country: 'Spain',
-                aqi: 35,
-                measurements: [
-                    { parameter: 'PM2.5', value: 9, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 19, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [1.2550, 41.1350] },
-            properties: {
-                name: 'Port de Tarragona',
-                city: 'Tarragona',
-                country: 'Spain',
-                aqi: 48,
-                measurements: [
-                    { parameter: 'PM2.5', value: 13, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 27, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        
-        // Miami Platja - Montroig del Camp
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [0.9465, 41.0112] },
-            properties: {
-                name: 'Miami Platja',
-                city: 'Montroig del Camp',
-                country: 'Spain',
-                aqi: 25,
-                measurements: [
-                    { parameter: 'PM2.5', value: 6, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 14, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        },
-        {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [0.8950, 41.0050] },
-            properties: {
-                name: 'Montroig del Camp',
-                city: 'Montroig del Camp',
-                country: 'Spain',
-                aqi: 22,
-                measurements: [
-                    { parameter: 'PM2.5', value: 5, unit: 'µg/m³' },
-                    { parameter: 'PM10', value: 12, unit: 'µg/m³' }
-                ],
-                lastUpdated: new Date().toISOString()
-            }
-        }
-    ]
+    features: []
 };
 
-let airQualityData = sampleMadridData;
+// Fetch real-time air quality data from WAQI
+async function fetchAirQualityData() {
+    try {
+        updateStatus('Fetching real-time data from WAQI...', true);
+        
+        const newFeatures = [];
+        let successCount = 0;
+        let errorCount = 0;
+        
+        // Fetch data for each city
+        for (const city of CONFIG.cities) {
+            try {
+                const response = await fetch(
+                    `https://api.waqi.info/feed/${city}/?token=${CONFIG.waqiToken}`
+                );
+                
+                if (!response.ok) {
+                    console.warn(`Failed to fetch data for ${city}`);
+                    errorCount++;
+                    continue;
+                }
+                
+                const data = await response.json();
+                
+                if (data.status === 'ok' && data.data) {
+                    const station = data.data;
+                    
+                    // Extract coordinates
+                    const lat = station.city.geo[0];
+                    const lon = station.city.geo[1];
+                    
+                    // Extract measurements
+                    const measurements = [];
+                    if (station.iaqi) {
+                        if (station.iaqi.pm25) {
+                            measurements.push({
+                                parameter: 'PM2.5',
+                                value: station.iaqi.pm25.v,
+                                unit: 'AQI'
+                            });
+                        }
+                        if (station.iaqi.pm10) {
+                            measurements.push({
+                                parameter: 'PM10',
+                                value: station.iaqi.pm10.v,
+                                unit: 'AQI'
+                            });
+                        }
+                        if (station.iaqi.no2) {
+                            measurements.push({
+                                parameter: 'NO2',
+                                value: station.iaqi.no2.v,
+                                unit: 'AQI'
+                            });
+                        }
+                        if (station.iaqi.o3) {
+                            measurements.push({
+                                parameter: 'O3',
+                                value: station.iaqi.o3.v,
+                                unit: 'AQI'
+                            });
+                        }
+                        if (station.iaqi.so2) {
+                            measurements.push({
+                                parameter: 'SO2',
+                                value: station.iaqi.so2.v,
+                                unit: 'AQI'
+                            });
+                        }
+                        if (station.iaqi.co) {
+                            measurements.push({
+                                parameter: 'CO',
+                                value: station.iaqi.co.v,
+                                unit: 'AQI'
+                            });
+                        }
+                    }
+                    
+                    // Create feature
+                    const feature = {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [lon, lat]
+                        },
+                        properties: {
+                            name: station.city.name,
+                            city: station.city.name,
+                            country: 'Spain',
+                            aqi: station.aqi,
+                            measurements: measurements,
+                            lastUpdated: station.time.iso,
+                            dominentpol: station.dominentpol || 'N/A'
+                        }
+                    };
+                    
+                    newFeatures.push(feature);
+                    successCount++;
+                    
+                } else {
+                    console.warn(`No data available for ${city}`);
+                    errorCount++;
+                }
+                
+                // Small delay to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+            } catch (error) {
+                console.error(`Error fetching ${city}:`, error);
+                errorCount++;
+            }
+        }
+        
+        // Update the data
+        airQualityData.features = newFeatures;
+        
+        if (successCount > 0) {
+            updateMap();
+            updateStatus(`${successCount} stations loaded (Live data!) 🟢`, false);
+            updateLastUpdateTime();
+        } else {
+            updateStatus(`Failed to load data. Check API token.`, false);
+        }
+        
+        console.log(`Loaded ${successCount} stations, ${errorCount} errors`);
+        
+    } catch (error) {
+        console.error('Error fetching air quality data:', error);
+        updateStatus('Error loading data. Will retry...', false);
+    }
+}
+
 
 function updateMap() {
     const source = map.getSource('air-quality');
@@ -368,7 +207,8 @@ function updateMap() {
                     'interpolate',
                     ['linear'],
                     ['zoom'],
-                    8, 8,
+                    5, 6,
+                    8, 10,
                     12, 16,
                     16, 24
                 ],
@@ -386,7 +226,8 @@ function updateMap() {
                 'circle-stroke-color': '#ffffff'
             }
         });
-        
+
+        // Add click handler for popups
         map.on('click', 'air-quality-circles', (e) => {
             const feature = e.features[0];
             const props = feature.properties;
@@ -394,26 +235,49 @@ function updateMap() {
                 ? JSON.parse(props.measurements) 
                 : props.measurements;
             
-            const measurementHTML = measurements
-                .map(m => `<li>${m.parameter}: ${m.value.toFixed(1)} ${m.unit}</li>`)
-                .join('');
+            let measurementHTML = '';
+            if (measurements && measurements.length > 0) {
+                measurementHTML = measurements
+                    .map(m => `<li><strong>${m.parameter}:</strong> ${m.value} ${m.unit}</li>`)
+                    .join('');
+            } else {
+                measurementHTML = '<li>No detailed measurements available</li>';
+            }
             
+            const category = getAQICategory(props.aqi);
+            const categoryColor = getAQIColor(props.aqi);
+
             new mapboxgl.Popup()
                 .setLngLat(feature.geometry.coordinates)
                 .setHTML(`
-                    <h3 style="margin: 0 0 10px 0; font-size: 16px;">${props.name}</h3>
-                    <p style="margin: 5px 0; font-size: 14px;">
-                        <strong>AQI: ${props.aqi}</strong> - ${getAQICategory(props.aqi)}
-                    </p>
-                    <p style="margin: 5px 0; font-size: 12px; color: #666;">
-                        ${props.city}, ${props.country}
-                    </p>
-                    <ul style="margin: 10px 0; padding-left: 20px; font-size: 12px;">
-                        ${measurementHTML}
-                    </ul>
-                    <p style="margin: 5px 0; font-size: 11px; color: #999;">
-                        Updated: ${new Date(props.lastUpdated).toLocaleString()}
-                    </p>
+                 <div style="min-width: 200px;">
+                        <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #333;">
+                            📍 ${props.name}
+                        </h3>
+                        <div style="background: ${categoryColor}; padding: 8px; border-radius: 4px; margin-bottom: 10px;">
+                            <p style="margin: 0; font-size: 18px; font-weight: bold; color: #fff; text-align: center;">
+                                AQI: ${props.aqi}
+                            </p>
+                            <p style="margin: 5px 0 0 0; font-size: 12px; color: #fff; text-align: center;">
+                                ${category}
+                            </p>
+                        </div>
+                        <p style="margin: 5px 0; font-size: 12px; color: #666;">
+                            <strong>Dominant Pollutant:</strong> ${props.dominentpol.toUpperCase()}
+                        </p>
+                        <p style="margin: 5px 0; font-size: 12px; color: #666;">
+                            <strong>Location:</strong> ${props.city}, ${props.country}
+                        </p>
+                        <ul style="margin: 10px 0; padding-left: 20px; font-size: 12px; color: #333;">
+                            ${measurementHTML}
+                        </ul>
+                        <p style="margin: 5px 0; font-size: 11px; color: #999;">
+                            🕐 Updated: ${new Date(props.lastUpdated).toLocaleString()}
+                        </p>
+                        <p style="margin: 5px 0; font-size: 10px; color: #999; font-style: italic;">
+                            Data from World Air Quality Index
+                        </p>
+                    </div>
                 `)
                 .addTo(map);
         });
@@ -426,6 +290,15 @@ function updateMap() {
             map.getCanvas().style.cursor = '';
         });
     }
+}
+
+function getAQIColor(aqi) {
+    if (aqi <= 50) return '#00e400'; // Good
+    if (aqi <= 100) return '#ffff00'; // Moderate
+    if (aqi <= 150) return '#ff7e00'; // Unhealthy for Sensitive Groups
+    if (aqi <= 200) return '#ff0000'; // Unhealthy
+    if (aqi <= 300) return '#8f3f3f'; // Very Unhealthy
+    return '#000000'; // Default to Hazardous
 }
 
 function getAQICategory(aqi) {
@@ -453,14 +326,22 @@ function updateLastUpdateTime() {
     }
 }
 
+// Initial data fetch
 map.on('load', () => {
-    updateStatus(`${airQualityData.features.length} stations loaded`, false);
-    updateMap();
-    updateLastUpdateTime();
+    // Fetch data immediately
+    fetchAirQualityData();
+    
+    // Auto-refresh every 30 minutes
+    setInterval(fetchAirQualityData, CONFIG.updateInterval);
 });
 
 map.on('error', (e) => {
     console.error('Map error:', e);
+    if (e.error && e.error.message && e.error.message.includes('accessToken')) {
+        updateStatus('⚠️ Please add your Mapbox token in app.js', false);
+    }
 });
 
-console.log('Map initialized with sample data');
+// Log for debugging
+console.log('Map initialized - fetching real-time WAQI data...');
+console.log('Monitoring cities:', CONFIG.cities);
